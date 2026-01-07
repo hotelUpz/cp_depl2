@@ -1,0 +1,331 @@
+Руководство по установке и запуску проекта
+
+Все параметры конфигурации задаются в файле a_config.py.
+
+ЛОКАЛЬНЫЙ ЗАПУСК
+Linux / macOS:
+chmod +x run.sh
+./run.sh
+
+Windows:
+Git Bash / WSL: ./run.bat
+PowerShell / CMD: .\run.bat
+
+Остановка:
+Ctrl + C или Ctrl + Z
+
+ДЕПЛОЙ НА VPS
+
+Загрузите проект в GitHub.
+
+Купите VPS с Ubuntu 22.04/24.04, статическим IP и root-доступом.
+
+Конфигурации сервера (на основе 1 процесс = 1 пользователь)
+
+Минимальная (до ~30 пользователей, с небольшим риском перегрузки):
+6 vCPU
+6 GB RAM
+40–60 GB SSD
+
+Рекомендуемая (стабильный продакшен ~30 пользователей):
+8 vCPU
+8 GB RAM
+NVMe SSD 60–80 GB
+
+Идеальная (рост нагрузки, 50+ пользователей):
+12 vCPU
+12–16 GB RAM
+
+
+
+Вход по SSH:
+ssh root@SERVER_IP
+(введите пароль)
+
+Hostname: copyy (Пример) (Server IP: 117.55.192.241)
+ssh root@117.55.192.241
+Root Password: v43W7aIBtk560NqZdG
+
+УСТАНОВКА СИСТЕМНОГО ОКРУЖЕНИЯ
+
+Обновление системы:
+apt update && apt install -y python3-pip
+
+apt update
+apt install -y git curl wget unzip build-essential python3 python3-pip python3-venv
+
+Создание swap:
+swapoff -a
+fallocate -l 4G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+free -h
+swapon --show
+df -h
+
+РАЗВЕРТЫВАНИЕ ПРОЕКТА
+
+Клонирование:
+cd /opt
+git clone https://github.com/ВАШ_РЕПО.git
+git clone https://github.com/Sonnik9/cp_trd_bot_depl/
+
+
+cd cp_trd_bot_depl
+
+(cd /opt/cp_trd_bot_depl)
+
+Виртуальное окружение:
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+
+
+sudo nano /etc/systemd/system/cp_trd_bot_depl.service
+
+[Unit]
+Description=cp_trd_bot_depl Python Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/cp_trd_bot_depl
+ExecStart=/opt/cp_trd_bot_depl/venv/bin/python -u /opt/cp_trd_bot_depl/main.py
+Restart=always
+RestartSec=3
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
+
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+
+
+Активировать сервис:
+systemctl daemon-reload
+systemctl enable cp_trd_bot_depl
+systemctl restart cp_trd_bot_depl
+systemctl status cp_trd_bot_depl
+
+Логи:
+journalctl -u cp_trd_bot_depl -f
+
+Остановка:
+systemctl stop cp_trd_bot_depl
+systemctl disable cp_trd_bot_depl
+pkill -f "cp_trd_bot_depl/main.py"
+
+Диагностика OOM:
+dmesg -T | grep -i oom
+dmesg -T | grep -i kill
+
+
+
+(для стягивания последних изменений):
+git fetch origin
+git reset --hard origin/master
+
+
+полный снос и переклонирование:
+systemctl stop cp_trd_bot_depl || true
+systemctl disable cp_trd_bot_depl || true
+pkill -f cp_trd_bot_depl || true
+pkill -f main.py || true
+
+rm -f /etc/systemd/system/cp_trd_bot_depl.service
+systemctl daemon-reload
+systemctl daemon-reexec
+
+systemctl status cp_trd_bot_depl
+# должно сказать: Unit cp_trd_bot_depl.service could not be found
+
+rm -rf /opt/cp_trd_bot_depl
+ls /opt
+# папки cp_trd_bot_depl быть НЕ должно
+3️⃣ КЛОНИРОВАТЬ ЗАНОВО (ЧИСТО)
+cd /opt
+git clone https://github.com/Sonnik9/cp_trd_bot_depl.git
+cd cp_trd_bot_depl
+
+
+Контроль:
+
+git status
+# On branch master
+# nothing to commit, working tree clean
+
+4️⃣ СОЗДАТЬ VENV С НУЛЯ (Python 3.8)
+python3 -m venv venv
+source venv/bin/activate
+python --version
+
+
+pip install --upgrade pip
+pip install -r requirements.txt
+
+6️⃣ ОБЯЗАТЕЛЬНАЯ ПРОВЕРКА РУКАМИ
+python main.py
+
+
+
+journalctl -u cp_trd_bot_depl -n 10000 --no-pager
+
+
+
+{
+  "0": {
+    "id": 0,
+    "role": "master",
+    "exchange": {
+      "api_key": "mx0vglHUIBeHDYL8fD",
+      "api_secret": "0599f28952f04f73bb52070f07d262ad",
+      "uid": "WEBca57350da33a7cd5a40ff4a919f936115723859281052265f4acddda796b3b93",
+      "proxy": "http://Lg7hLbC8:cXxwCBy8@154.219.72.198:64810"
+    },
+    "cmd_state": {
+      "trading_enabled": false,
+      "stop_flag": false,
+      "stop_confirm": false
+    },
+    "created_at": 1767307006614
+  },
+  "1": {
+    "id": 1,
+    "name": null,
+    "role": "copy",
+    "exchange": {
+      "api_key": "mx0vglNivAIg9aIjot",
+      "api_secret": "a34dd3c3d1c140dd88ed5f1ee7c7512d",
+      "uid": "WEB8533b03eb974e918fdfe0eced56f998b842d7f684a81f9afba97e2dc4e06211e",
+      "proxy": null
+    },
+    "coef": 1.0,
+    "leverage": null,
+    "margin_mode": null,
+    "max_position_size": null,
+    "random_size_pct": [
+      -0.0,
+      0.0
+    ],
+    "delay_ms": [
+      0.0,
+      0.0
+    ],
+    "enabled": true,
+    "created_at": 1767399621124
+  },
+  "2": {
+    "id": 2,
+    "name": null,
+    "role": "copy",
+    "exchange": {
+      "api_key": "mx0vglAc2baOu57BL9",
+      "api_secret": "c0e188c7c60f4a8c807cb7bcf2512515",
+      "uid": "WEBad96cdd2709c9626a4df9ec73878a3a7a6c93a1342bf5f738aadd2c3aaefb8b9",
+      "proxy": null
+    },
+    "coef": 1.0,
+    "leverage": null,
+    "margin_mode": null,
+    "max_position_size": null,
+    "random_size_pct": [
+      -0.0,
+      0.0
+    ],
+    "delay_ms": [
+      0.0,
+      0.0
+    ],
+    "enabled": true,
+    "created_at": 1767399621136
+  },
+  "3": {
+    "id": 3,
+    "name": null,
+    "role": "copy",
+    "exchange": {
+      "api_key": "mx0vgl2GBjzjWq9oiK",
+      "api_secret": "83df5542cc3e4cf0a2e28bbc106d0452",
+      "uid": "WEBcd7722348afb906aaad329d3006dc4eed018b5b51846d9de113bfec0d5f1725e",
+      "proxy": null
+    },
+    "coef": 1.0,
+    "leverage": null,
+    "margin_mode": null,
+    "max_position_size": null,
+    "random_size_pct": [
+      -0.0,
+      0.0
+    ],
+    "delay_ms": [
+      0.0,
+      0.0
+    ],
+    "enabled": true,
+    "created_at": 1767399621148
+  },
+  "4": {
+    "id": 4,
+    "name": null,
+    "role": "copy",
+    "exchange": {
+      "api_key": "mx0vgl06xt95G5oZtW",
+      "api_secret": "4ef59dcb758945cab7bf5a22b14d177b",
+      "uid": "WEBa94f7162e1b35967af292b8fc7a09025b7b9ae77d384960adbcf0b7cd106baba",
+      "proxy": null
+    },
+    "coef": 1.0,
+    "leverage": null,
+    "margin_mode": null,
+    "max_position_size": null,
+    "random_size_pct": [
+      -0.0,
+      0.0
+    ],
+    "delay_ms": [
+      0.0,
+      0.0
+    ],
+    "enabled": true,
+    "created_at": 1767399621159
+  },
+  "5": null,
+  "6": null,
+  "7": null,
+  "8": null,
+  "9": null,
+  "10": null,
+  "11": null,
+  "12": null,
+  "13": null,
+  "14": null,
+  "15": null,
+  "16": null,
+  "17": null,
+  "18": null,
+  "19": null,
+  "20": null,
+  "21": null,
+  "22": null,
+  "23": null,
+  "24": null,
+  "25": null,
+  "26": null,
+  "27": null,
+  "28": null,
+  "29": null,
+  "30": null
+
+}
+
+
+
+
+
+git add .
+git commit -m "copy_executor decomposite and fix pos_vars reset"
+git push origin master

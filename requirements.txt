@@ -1,0 +1,7 @@
+aiogram
+requests
+aiohttp
+pytz
+psutil
+# aiogram==3.23.0
+dotenv

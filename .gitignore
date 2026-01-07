@@ -1,0 +1,9 @@
+.venv/
+venv/
+*/.venv/
+*/venv/
+env
+.env
+CREDS.txt
+*.pyc
+__pycache__/

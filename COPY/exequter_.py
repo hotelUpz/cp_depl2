@@ -361,10 +361,10 @@ class CopyExequter:
             )
             return
         
-        connector: "NetworkManager" = rt.get("connector", None)
-        ok = await connector.wait_for_session()
-        if not ok:
-            return None
+        # connector: "NetworkManager" = rt.get("connector", None)
+        # ok = await connector.wait_for_session()
+        # if not ok:
+        #     return None
         
         # --------------------------------------------------
         # orders_vars
